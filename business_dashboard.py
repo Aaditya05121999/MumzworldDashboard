@@ -639,7 +639,8 @@ def main():
         # Calculate per order savings```python
         per_order_savings = savings / ksa_data['Orders'].sum()
 
-        # Calculation methodology
+        # Calculation```python
+ methodology
         st.markdown("### Calculation Methodology")
         st.markdown(f"""
         <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
@@ -675,6 +676,212 @@ def main():
             </ol>
         </div>
         """, unsafe_allow_html=True)
+
+        # Interactive Financial Impact Calculator
+        st.markdown("---")
+        st.markdown("### Interactive Financial Impact Calculator")
+        st.markdown("**Model different scenarios and see immediate profit impact**")
+
+        # Create columns for the calculator
+        calc_col1, calc_col2 = st.columns([1, 1])
+
+        with calc_col1:
+            st.markdown("#### Scenario Modeling")
+
+            # Shipping cost reduction slider
+            shipping_reduction = st.slider(
+                "KSA Shipping Cost Reduction (%)",
+                min_value=0,
+                max_value=30,
+                value=15,
+                step=1,
+                help="Adjust the percentage reduction in KSA shipping costs"
+            )
+
+            # Voucher spend reduction slider  
+            voucher_reduction = st.slider(
+                "Voucher Spend Reduction (%)",
+                min_value=0,
+                max_value=50,
+                value=0,
+                step=5,
+                help="Reduce voucher spending across all categories"
+            )
+
+            # Marketing cost optimization slider
+            marketing_optimization = st.slider(
+                "Marketing Cost Optimization (%)",
+                min_value=-20,
+                max_value=20,
+                value=0,
+                step=5,
+                help="Increase (+) or decrease (-) marketing spend"
+            )
+
+            # Category mix adjustment
+            st.markdown("**Category Mix Adjustments:**")
+            high_margin_boost = st.slider(
+                "High-Margin Categories Revenue Boost (%)",
+                min_value=0,
+                max_value=25,
+                value=0,
+                step=5,
+                help="Boost revenue for categories with >40% margin"
+            )
+
+        with calc_col2:
+            st.markdown("#### Real-Time Impact Analysis")
+
+            # Calculate current baseline
+            ksa_data = df[df['Country'] == 'KSA'] # define ksa_data here
+            baseline_shipping = ksa_data['Shipping Cost'].sum()
+            baseline_voucher = df['Voucher Cost'].sum()
+            baseline_marketing = df['Marketing Cost'].sum()
+            baseline_revenue = df['Revenue'].sum()
+            baseline_gross_profit = df['Gross_Profit'].sum()
+
+            # Calculate scenario impacts
+            shipping_savings = baseline_shipping * (shipping_reduction / 100)
+            voucher_savings = baseline_voucher * (voucher_reduction / 100)
+            marketing_change = baseline_marketing * (marketing_optimization / 100)
+
+            # High margin category boost calculation
+            high_margin_categories = df[df['Gross Margin %'] > 0.40]
+            high_margin_revenue = high_margin_categories['Revenue'].sum()
+            revenue_boost = high_margin_revenue * (high_margin_boost / 100)
+            additional_gross_profit = revenue_boost * high_margin_categories['Gross Margin %'].mean()
+
+            # Total impact calculation
+            total_cost_savings = shipping_savings + voucher_savings - marketing_change
+            total_profit_impact = total_cost_savings + additional_gross_profit
+            roi_percentage = (total_profit_impact / baseline_gross_profit) * 100
+
+            # Display results
+            st.markdown(f"""
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+                <h4>Scenario Results</h4>
+                <p><strong>💰 Total Profit Impact:</strong> <span style="color: {'#059669' if total_profit_impact > 0 else '#dc2626'};">${total_profit_impact:+,.0f}</span></p>
+                <p><strong>📈 ROI Impact:</strong> <span style="color: {'#059669' if roi_percentage > 0 else '#dc2626'};">{roi_percentage:+.1f}%</span></p>
+                <hr>
+                <p><strong>Component Breakdown:</strong></p>
+                <ul>
+                    <li>Shipping Savings: ${shipping_savings:,.0f}</li>
+                    <li>Voucher Savings: ${voucher_savings:,.0f}</li>
+                    <li>Marketing Change: ${marketing_change:+,.0f}</li>
+                    <li>Revenue Boost Impact: ${additional_gross_profit:,.0f}</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # ROI Calculator for specific initiatives
+            st.markdown("#### Initiative ROI Calculator")
+
+            # Investment amount input
+            investment_amount = st.number_input(
+                "Investment Amount ($)",
+                min_value=0,
+                max_value=1000000,
+                value=50000,
+                step=10000,
+                help="Enter the investment required for implementation"
+            )
+
+            if investment_amount > 0:
+                payback_months = (investment_amount / (total_profit_impact / 12)) if total_profit_impact > 0 else float('inf')
+                roi_ratio = (total_profit_impact / investment_amount) if investment_amount > 0 else 0
+
+                st.markdown(f"""
+                <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <h4>Investment Analysis</h4>
+                    <p><strong>💸 Investment:</strong> ${investment_amount:,.0f}</p>
+                    <p><strong>⏱️ Payback Period:</strong> {payback_months:.1f} months</p>
+                    <p><strong>🎯 ROI Ratio:</strong> {roi_ratio:.1f}x</p>
+                    <p><strong>📊 Annual Return:</strong> {(roi_ratio-1)*100:+.0f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Quick scenario buttons
+        st.markdown("#### Quick Scenario Templates")
+
+        scenario_col1, scenario_col2, scenario_col3 = st.columns(3)
+
+        with scenario_col1:
+            if st.button("💼 Conservative Plan", help="15% shipping, 10% voucher reduction"):
+                shipping_reduction = 15
+                voucher_reduction = 10
+                marketing_optimization = 0
+                high_margin_boost = 5
+                st.rerun()
+
+        with scenario_col2:
+            if st.button("🚀 Aggressive Plan", help="25% shipping, 20% voucher, 10% marketing cut, 15% high-margin boost"):
+                shipping_reduction = 25
+                voucher_reduction = 20
+                marketing_optimization = -10
+                high_margin_boost = 15
+                st.rerun()
+
+        with scenario_col3:
+            if st.button("🎯 Growth Plan", help="15% shipping reduction, 15% marketing increase, 20% high-margin boost"):
+                shipping_reduction = 15
+                voucher_reduction = 5
+                marketing_optimization = 15
+                high_margin_boost = 20
+                st.rerun()
+
+        # Sensitivity Analysis
+        st.markdown("#### Sensitivity Analysis")
+        st.markdown("**How sensitive is profit to different variables?**")
+
+        # Create sensitivity data
+        sensitivity_data = {
+            'Variable': ['Shipping Cost', 'Voucher Spend', 'Marketing Cost', 'High-Margin Revenue'],
+            '1% Change Impact': [
+                baseline_shipping * 0.01,
+                baseline_voucher * 0.01,
+                -baseline_marketing * 0.01,  # Negative because it's a cost
+                high_margin_revenue * 0.01 * high_margin_categories['Gross Margin %'].mean()
+            ]
+        }
+
+        sensitivity_df = pd.DataFrame(sensitivity_data)
+        sensitivity_df['Annual Impact ($1M)'] = sensitivity_df['1% Change Impact'] / 1000000
+
+        fig_sensitivity = px.bar(
+            sensitivity_df,
+            x='Variable',
+            y='1% Change Impact',
+            title="Profit Sensitivity to 1% Change in Key Variables",
+            color='1% Change Impact',
+            color_continuous_scale='RdYlGn'
+        )
+        fig_sensitivity.update_layout(height=300, xaxis_tickangle=-45)
+        st.plotly_chart(fig_sensitivity, use_container_width=True)
+
+        # Implementation Priority Matrix
+        st.markdown("#### Implementation Priority Matrix")
+
+        implementation_data = {
+            'Initiative': ['Shipping Optimization', 'Voucher Reduction', 'Marketing Reallocation', 'Category Mix Optimization'],
+            'Impact ($)': [shipping_savings, voucher_savings, abs(marketing_change), additional_gross_profit],
+            'Implementation Ease (1-10)': [7, 9, 6, 4],
+            'Time to Impact (Months)': [3, 1, 2, 6]
+        }
+
+        impl_df = pd.DataFrame(implementation_data)
+
+        fig_priority = px.scatter(
+            impl_df,
+            x='Implementation Ease (1-10)',
+            y='Impact ($)',
+            size='Impact ($)',
+            color='Time to Impact (Months)',
+            hover_name='Initiative',
+            title="Initiative Priority Matrix (Higher Right = Better)",
+            color_continuous_scale='RdYlGn_r'
+        )
+        fig_priority.update_layout(height=400)
+        st.plotly_chart(fig_priority, use_container_width=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
