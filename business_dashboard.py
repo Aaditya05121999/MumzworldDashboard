@@ -961,124 +961,6 @@ def main():
             </ol>
         </div>
         """, unsafe_allow_html=True)
-
-        # Customer Segment Performance Analysis
-        st.markdown("### Customer Segment Performance Analysis")
-
-        # Create performance matrix
-        performance_analysis = customer_revenue_analysis.copy()
-        performance_analysis['Customer_Value_Score'] = (
-            performance_analysis['Revenue_Per_Customer'] / performance_analysis['Revenue_Per_Customer'].max() * 50 +
-            (1 - performance_analysis['New_Customer_Ratio']) * 50  # Higher score for more repeat customers
-        )
-        performance_analysis = performance_analysis.sort_values('Customer_Value_Score', ascending=False)
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.markdown("####  Customer Value Champions")
-            top_performers = performance_analysis.head(3)
-            for i, (_, row) in enumerate(top_performers.iterrows()):
-                rank_emoji = ["", "", ""][i]
-                st.markdown(f"""
-                <div style="background: #f0fdf4; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid #10b981;">
-                    <h5>{rank_emoji} {row['Category']}</h5>
-                    <p><strong>Revenue/Customer:</strong> ${row['Revenue_Per_Customer']:.0f}</p>
-                    <p><strong>New/Repeat Mix:</strong> {row['New_Customer_Ratio']:.0%}/{(1-row['New_Customer_Ratio']):.0%}</p>
-                    <p><strong>Value Score:</strong> {row['Customer_Value_Score']:.0f}/100</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-        with col2:
-            st.markdown("####  Acquisition-Heavy Categories")
-            high_acquisition = performance_analysis.tail(3)
-            for _, row in high_acquisition.iterrows():
-                st.markdown(f"""
-                <div style="background: #fef3c7; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid #f59e0b;">
-                    <h5> {row['Category']}</h5>
-                    <p><strong>Revenue/Customer:</strong> ${row['Revenue_Per_Customer']:.0f}</p>
-                    <p><strong>New/Repeat Mix:</strong> {row['New_Customer_Ratio']:.0%}/{(1-row['New_Customer_Ratio']):.0%}</p>
-                    <p><strong>Growth Focus:</strong> High acquisition, needs retention strategy</p>
-                </div>
-                """, unsafe_allow_html=True)
-
-        # Business Impact Analysis
-        st.markdown("### Business Impact Analysis")
-
-        # Calculate potential revenue impact of improving customer mix
-        current_total_revenue = customer_revenue_analysis['Revenue'].sum()
-
-        # Simulate improving retention in high-acquisition categories
-        optimized_scenario = customer_revenue_analysis.copy()
-        high_new_mask = optimized_scenario['New_Customer_Ratio'] > 0.7
-
-        # Reduce new customer ratio by 20% for high-acquisition categories
-        optimized_scenario.loc[high_new_mask, 'New_Customer_Ratio'] *= 0.8
-
-        # Assume repeat customers generate 1.5x more revenue per customer
-        optimized_scenario['Optimized_Revenue_Per_Customer'] = (
-            optimized_scenario['New_Customer_Ratio'] * optimized_scenario['Revenue_Per_Customer'] +
-            (1 - optimized_scenario['New_Customer_Ratio']) * optimized_scenario['Revenue_Per_Customer'] * 1.5
-        )
-
-        optimized_revenue = (optimized_scenario['Total_Customers'] * optimized_scenario['Optimized_Revenue_Per_Customer']).sum()
-        revenue_uplift = optimized_revenue - current_total_revenue
-
-        st.markdown(f"""
-        <div style="background: #ecfdf5; padding: 1rem; border-radius: 6px; border-left: 4px solid #10b981; margin: 1rem 0;">
-            <h4>Revenue Optimization Scenario:</h4>
-            <p><strong>Current Portfolio Value:</strong> ${current_total_revenue:,.0f}</p>
-            <p><strong>Optimized Portfolio Value:</strong> ${optimized_revenue:,.0f}</p>
-            <p><strong>Potential Revenue Uplift:</strong> ${revenue_uplift:,.0f} ({(revenue_uplift/current_total_revenue)*100:.1f}%)</p>
-            <p><strong>Strategy:</strong> Improve retention in high-acquisition categories to 80:20 new/repeat mix</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        st.markdown("### Strategic Recommendations")
-        st.markdown(f"""
-        <div class="insight-card">
-            <h4>Immediate Actions for Mumzworld:</h4>
-            <ol>
-                <li><strong>Rebalance {highest_new_ratio['Category']} customer acquisition strategy</strong> - {highest_new_ratio['New_Customer_Ratio']:.0%} new customers is unsustainable, focus on retention programs</li>
-                <li><strong>Scale {highest_revenue_per_customer['Category']} success model</strong> - ${highest_revenue_per_customer['Revenue_Per_Customer']:.0f} per customer with {(1-highest_revenue_per_customer['New_Customer_Ratio']):.0%} repeat rate is optimal</li>
-                <li><strong>Target 50:50 new/repeat ratio across portfolio</strong> - balanced growth with customer lifetime value optimization</li>
-                <li><strong>Implement customer lifecycle programs</strong> - nurture new customers into repeat buyers with targeted retention campaigns</li>
-                <li><strong>Potential ${revenue_uplift:,.0f} revenue uplift</strong> by improving customer mix in high-acquisition categories</li>
-            </ol>
-        </div>
-        """, unsafe_allow_html=True)
-
-        # Category-specific action plans
-        st.markdown("### Category-Specific Action Plans")
-
-        action_plan_categories = customer_revenue_analysis.nlargest(4, 'Revenue')
-
-        for _, row in action_plan_categories.iterrows():
-            if row['New_Customer_Ratio'] > 0.6:
-                strategy = "RETENTION FOCUS"
-                action = "Launch loyalty program and post-purchase engagement sequence"
-                color = "#fef3c7"
-                border_color = "#f59e0b"
-            elif row['New_Customer_Ratio'] < 0.4:
-                strategy = "ACQUISITION BOOST"
-                action = "Increase marketing spend and referral programs"
-                color = "#e0f2fe"
-                border_color = "#0ea5e9"
-            else:
-                strategy = "MAINTAIN BALANCE"
-                action = "Continue current strategy - optimal customer mix"
-                color = "#f0fdf4"
-                border_color = "#10b981"
-
-            st.markdown(f"""
-            <div style="background: {color}; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid {border_color};">
-                <h5>{row['Category']} - {strategy}</h5>
-                <p><strong>Current Mix:</strong> {row['New_Customer_Ratio']:.0%} new / {(1-row['New_Customer_Ratio']):.0%} repeat</p>
-                <p><strong>Revenue/Customer:</strong> ${row['Revenue_Per_Customer']:.0f}</p>
-                <p><strong>Action:</strong> {action}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
         st.markdown('</div>', unsafe_allow_html=True)
 
     # Question 10: Margin improvement priorities for 2025
@@ -1460,6 +1342,21 @@ def main():
         <p>Mumzworld Business Analytics Dashboard</p>
         <p>Built for Graduate Management Trainee Programme Assessment</p>
         <p><em>All insights based on comprehensive performance data analysis</em></p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Suggestions for taking dashboard one step further
+    st.markdown("### Suggestions for Dashboard Enhancement")
+    st.markdown("""
+    <div class="insight-card">
+        <h4>Potential Enhancements:</h4>
+        <ol>
+            <li><strong>Predictive Analytics:</strong> Implement forecasting models for revenue, churn, and demand to anticipate future trends and optimize resource allocation.</li>
+            <li><strong>Real-time Data Integration:</strong> Connect the dashboard to live data sources for up-to-the-minute insights and faster decision-making.</li>
+            <li><strong>Interactive Scenario Planning:</strong> Allow users to simulate the impact of different strategies and investments on key performance indicators.</li>
+            <li><strong>Customer Segmentation:</strong> Incorporate advanced customer segmentation techniques to identify high-value customers and tailor marketing efforts accordingly.</li>
+            <li><strong>A/B Testing Module:</strong> Integrate a module to track and analyze the results of A/B tests, enabling continuous improvement of marketing campaigns and website design.</li>
+        </ol>
     </div>
     """, unsafe_allow_html=True)
 
