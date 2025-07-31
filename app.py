@@ -1460,26 +1460,12 @@ def main():
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; color: #666; padding: 1rem 0;">
-        <p>Mumzworld Business Analytics Dashboard</p>
+        <p>Mumzworld Business Analytics Dashboard - Aaditya Sriram</p>
         <p>Built for Graduate Management Trainee Programme Assessment</p>
         <p><em>All insights based on comprehensive performance data analysis</em></p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Suggestions for taking dashboard one step further
-    st.markdown("### Suggestions for Dashboard Enhancement")
-    st.markdown("""
-    <div class="insight-card">
-        <h4>Potential Enhancements:</h4>
-        <ol>
-            <li><strong>Predictive Analytics:</strong> Implement forecasting models for revenue, churn, and demand to anticipate future trends and optimize resource allocation.</li>
-            <li><strong>Real-time Data Integration:</strong> Connect the dashboard to live data sources for up-to-the-minute insights and faster decision-making.</li>
-            <li><strong>Interactive Scenario Planning:</strong> Allow users to simulate the impact of different strategies and investments on key performance indicators.</li>
-            <li><strong>Customer Segmentation:</strong> Incorporate advanced customer segmentation techniques to identify high-value customers and tailor marketing efforts accordingly.</li>
-            <li><strong>A/B Testing Module:</strong> Integrate a module to track and analyze the results of A/B tests, enabling continuous improvement of marketing campaigns and website design.</li>
-        </ol>
-    </div>
-    """, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
