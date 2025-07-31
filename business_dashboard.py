@@ -638,9 +638,8 @@ def main():
         fig.update_layout(height=350, xaxis_tickangle=-45)
         st.plotly_chart(fig, use_container_width=True)
 
-        # Calculate per order savings
-        per_order```python
-savings = savings / ksa_data['Orders'].sum()
+        # Calculate per order savings```python
+        per_order_savings = savings / ksa_data['Orders'].sum()
 
         # Calculation methodology
         st.markdown("### Calculation Methodology")
@@ -1227,7 +1226,7 @@ savings = savings / ksa_data['Orders'].sum()
         # Detailed breakdown table
         st.markdown("### Category Contribution Analysis")
         uae_category_margin_display = uae_category_margin.copy()
-        uae_category_margin_display['Revenue'] = uae_category_margin_display['Revenue'].apply(lambda x: f"${x:,.0f}")```python
+        uae_category_margin_display['Revenue'] = uae_category_margin_display['Revenue'].apply(lambda x: f"${x:,.0f}")
         uae_category_margin_display['Gross Margin %'] = uae_category_margin_display['Gross Margin %'].apply(lambda x: f"{x:.1%}")
         uae_category_margin_display['Revenue_Weight'] = uae_category_margin_display['Revenue_Weight'].apply(lambda x: f"{x:.1%}")
         uae_category_margin_display['Weighted_Contribution'] = uae_category_margin_display['Weighted_Contribution'].apply(lambda x: f"{x:.3%}")
