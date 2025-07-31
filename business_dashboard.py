@@ -776,10 +776,10 @@ def main():
 
         churn_analysis = df.groupby('Country').agg({
             'Customer Churn Rate': 'mean',
-            'SLA Compliance %': 'mean',
             'Avg Delivery Time (days)': 'mean',
             'Success Rate': 'mean',
-            'Repurchase Rate': 'mean'
+            'Marketing_Cost_Per_Order': 'mean',
+            'Voucher_Cost_Per_Order': 'mean'
         }).reset_index()
 
         col1, col2 = st.columns(2)
@@ -797,12 +797,12 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            # Correlation analysis for churn drivers
+            # Correlation analysis for churn drivers (excluding SLA since it shows no correlation with repurchase)
             churn_correlations = pd.Series({
-                'SLA Compliance %': np.corrcoef(df['Customer Churn Rate'], df['SLA Compliance %'])[0, 1],
                 'Avg Delivery Time (days)': np.corrcoef(df['Customer Churn Rate'], df['Avg Delivery Time (days)'])[0, 1],
                 'Success Rate': np.corrcoef(df['Customer Churn Rate'], df['Success Rate'])[0, 1],
-                'Voucher_Cost_Per_Order': np.corrcoef(df['Customer Churn Rate'], df['Voucher_Cost_Per_Order'])[0, 1]
+                'Marketing Cost/Order': np.corrcoef(df['Customer Churn Rate'], df['Marketing_Cost_Per_Order'])[0, 1],
+                'Voucher Cost/Order': np.corrcoef(df['Customer Churn Rate'], df['Voucher_Cost_Per_Order'])[0, 1]
             })
 
             fig2 = px.bar(
@@ -819,12 +819,51 @@ def main():
         # Key insights
         highest_churn_country = churn_analysis.loc[churn_analysis['Customer Churn Rate'].idxmax(), 'Country']
         highest_churn_rate = churn_analysis['Customer Churn Rate'].max()
+        strongest_driver = churn_correlations.abs().idxmax()
+        strongest_correlation = churn_correlations[strongest_driver]
 
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Churn Driver Analysis (Excluding SLA):</h4>
+            <p><strong>Note:</strong> SLA Compliance excluded from analysis as Q3 established no correlation with customer behavior</p>
+            <p><strong>Churn Rate by Country = </strong>groupby('Country').mean('Customer_Churn_Rate')</p>
+            <p><strong>Primary Driver Correlations:</strong></p>
+            <ul>
+        """, unsafe_allow_html=True)
+        
+        for metric, corr in churn_correlations.items():
+            st.markdown(f"<li>{metric}: {corr:.3f} correlation</li>", unsafe_allow_html=True)
+        
+        st.markdown(f"""
+            </ul>
+            <p><strong>Strongest Driver:</strong> {strongest_driver} with {strongest_correlation:.3f} correlation</p>
+            <p><strong>Highest Churn Market:</strong> {highest_churn_country} = {highest_churn_rate:.3%}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Key Data Insights")
         st.markdown(f"""
         <div class="insight-card">
-            <h3>Churn Analysis Summary</h3>
-            <p><strong>Highest churn rate:</strong> {highest_churn_country} ({highest_churn_rate:.1%})</p>
-            <p><strong>Key drivers:</strong> Based on correlations, focus on improving delivery performance and SLA compliance</p>
+            <h4>Top 3 Strategic Insights:</h4>
+            <ol>
+                <li><strong>{highest_churn_country} shows higher churn at {highest_churn_rate:.1%}</strong> vs other market - requires targeted intervention</li>
+                <li><strong>{strongest_driver} is the primary churn driver</strong> with {strongest_correlation:.3f} correlation - focus optimization here</li>
+                <li><strong>Delivery performance and success rates</strong> show meaningful impact on churn - operational excellence matters</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Strategic Recommendations")
+        st.markdown(f"""
+        <div class="insight-card">
+            <h4>Immediate Actions for Mumzworld:</h4>
+            <ol>
+                <li><strong>Launch {highest_churn_country} retention program</strong> - focus on improving delivery speed and success rates</li>
+                <li><strong>Optimize {strongest_driver.lower()}</strong> as primary churn reduction lever</li>
+                <li><strong>Implement predictive churn alerts</strong> based on delivery performance metrics</li>
+            </ol>
         </div>
         """, unsafe_allow_html=True)
 
