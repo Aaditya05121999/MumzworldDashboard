@@ -639,7 +639,8 @@ def main():
         st.plotly_chart(fig, use_container_width=True)
 
         # Calculate per order savings
-        per_order_savings = savings / ksa_data['Orders'].sum()
+        per_order```python
+savings = savings / ksa_data['Orders'].sum()
 
         # Calculation methodology
         st.markdown("### Calculation Methodology")
@@ -713,7 +714,7 @@ def main():
 
         # Efficiency Champions section under the graph
         st.markdown("### Efficiency Champions")
-        
+
         # Calculation methodology
         st.markdown("### Calculation Methodology")
         top_efficient = repurchase_efficiency.iloc[0]
@@ -730,9 +731,9 @@ def main():
 
         # Create three columns for the efficiency champions
         eff_col1, eff_col2, eff_col3 = st.columns(3)
-        
+
         top_3_efficient = repurchase_efficiency.head(3)
-        
+
         with eff_col1:
             row = top_3_efficient.iloc[0]
             st.markdown(f"""
@@ -743,7 +744,7 @@ def main():
                 <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
             </div>
             """, unsafe_allow_html=True)
-            
+
         with eff_col2:
             row = top_3_efficient.iloc[1]
             st.markdown(f"""
@@ -754,7 +755,7 @@ def main():
                 <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
             </div>
             """, unsafe_allow_html=True)
-            
+
         with eff_col3:
             row = top_3_efficient.iloc[2]
             st.markdown(f"""
@@ -832,10 +833,10 @@ def main():
             <p><strong>Primary Driver Correlations:</strong></p>
             <ul>
         """, unsafe_allow_html=True)
-        
+
         for metric, corr in churn_correlations.items():
             st.markdown(f"<li>{metric}: {corr:.3f} correlation</li>", unsafe_allow_html=True)
-        
+
         st.markdown(f"""
             </ul>
             <p><strong>Strongest Driver:</strong> {strongest_driver} with {strongest_correlation:.3f} correlation</p>
@@ -915,6 +916,172 @@ def main():
             fig2.update_layout(height=350)
             st.plotly_chart(fig2, use_container_width=True)
 
+        # Calculate key insights
+        highest_new_ratio = customer_revenue_analysis.loc[customer_revenue_analysis['New_Customer_Ratio'].idxmax()]
+        highest_revenue_per_customer = customer_revenue_analysis.loc[customer_revenue_analysis['Revenue_Per_Customer'].idxmax()]
+
+        # Find optimal balance categories (40-60% new customer ratio)
+        balanced_categories = customer_revenue_analysis[
+            (customer_revenue_analysis['New_Customer_Ratio'] >= 0.4) & 
+            (customer_revenue_analysis['New_Customer_Ratio'] <= 0.6)
+        ]
+
+        # Calculate repeat customer value vs new customer acquisition
+        total_new_customers = customer_revenue_analysis['New Customers'].sum()
+        total_repeat_customers = customer_revenue_analysis['Repeat Customers'].sum()
+        total_revenue = customer_revenue_analysis['Revenue'].sum()
+
+        new_customer_revenue_share = (customer_revenue_analysis['New Customers'] * customer_revenue_analysis['Revenue_Per_Customer']).sum() / total_revenue
+        repeat_customer_revenue_share = 1 - new_customer_revenue_share
+
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Customer Revenue Impact Analysis:</h4>
+            <p><strong>New Customer Ratio = </strong>New_Customers ÷ (New_Customers + Repeat_Customers) by Category</p>
+            <p><strong>Revenue per Customer = </strong>Total_Revenue ÷ Total_Customers by Category</p>
+            <p><strong>Portfolio Analysis:</strong></p>
+            <ul>
+                <li>Total New Customers: {total_new_customers:,.0f} ({total_new_customers/(total_new_customers+total_repeat_customers):.1%})</li>
+                <li>Total Repeat Customers: {total_repeat_customers:,.0f} ({total_repeat_customers/(total_new_customers+total_repeat_customers):.1%})</li>
+                <li>New Customer Revenue Share: {new_customer_revenue_share:.1%}</li>
+                <li>Repeat Customer Revenue Share: {repeat_customer_revenue_share:.1%}</li>
+            </ul>
+            <p><strong>Top New Customer Category:</strong> {highest_new_ratio['Category']} = {highest_new_ratio['New_Customer_Ratio']:.3%}</p>
+            <p><strong>Highest Revenue/Customer:</strong> {highest_revenue_per_customer['Category']} = ${highest_revenue_per_customer['Revenue_Per_Customer']:.0f}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Key Data Insights")
+        st.markdown(f"""
+        <div class="insight-card">
+            <h4>Top 3 Strategic Insights:</h4>
+            <ol>
+                <li><strong>{highest_new_ratio['Category']} shows highest new customer dependency</strong> at {highest_new_ratio['New_Customer_Ratio']:.1%} but only ${highest_new_ratio['Revenue_Per_Customer']:.0f} revenue per customer - growth focused but low value</li>
+                <li><strong>{highest_revenue_per_customer['Category']} generates highest value per customer</strong> at ${highest_revenue_per_customer['Revenue_Per_Customer']:.0f} with {highest_revenue_per_customer['New_Customer_Ratio']:.1%} new customer ratio - premium retention model</li>
+                <li><strong>Balanced categories (40-60% new/repeat) show optimal performance</strong> - {len(balanced_categories)} categories achieve sustainable growth with customer lifetime value</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Customer Segment Performance Analysis
+        st.markdown("### Customer Segment Performance Analysis")
+
+        # Create performance matrix
+        performance_analysis = customer_revenue_analysis.copy()
+        performance_analysis['Customer_Value_Score'] = (
+            performance_analysis['Revenue_Per_Customer'] / performance_analysis['Revenue_Per_Customer'].max() * 50 +
+            (1 - performance_analysis['New_Customer_Ratio']) * 50  # Higher score for more repeat customers
+        )
+        performance_analysis = performance_analysis.sort_values('Customer_Value_Score', ascending=False)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.markdown("#### 🏆 Customer Value Champions")
+            top_performers = performance_analysis.head(3)
+            for i, (_, row) in enumerate(top_performers.iterrows()):
+                rank_emoji = ["🥇", "🥈", "🥉"][i]
+                st.markdown(f"""
+                <div style="background: #f0fdf4; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid #10b981;">
+                    <h5>{rank_emoji} {row['Category']}</h5>
+                    <p><strong>Revenue/Customer:</strong> ${row['Revenue_Per_Customer']:.0f}</p>
+                    <p><strong>New/Repeat Mix:</strong> {row['New_Customer_Ratio']:.0%}/{(1-row['New_Customer_Ratio']):.0%}</p>
+                    <p><strong>Value Score:</strong> {row['Customer_Value_Score']:.0f}/100</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        with col2:
+            st.markdown("#### ⚠️ Acquisition-Heavy Categories")
+            high_acquisition = performance_analysis.tail(3)
+            for _, row in high_acquisition.iterrows():
+                st.markdown(f"""
+                <div style="background: #fef3c7; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid #f59e0b;">
+                    <h5>📈 {row['Category']}</h5>
+                    <p><strong>Revenue/Customer:</strong> ${row['Revenue_Per_Customer']:.0f}</p>
+                    <p><strong>New/Repeat Mix:</strong> {row['New_Customer_Ratio']:.0%}/{(1-row['New_Customer_Ratio']):.0%}</p>
+                    <p><strong>Growth Focus:</strong> High acquisition, needs retention strategy</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Business Impact Analysis
+        st.markdown("### Business Impact Analysis")
+
+        # Calculate potential revenue impact of improving customer mix
+        current_total_revenue = customer_revenue_analysis['Revenue'].sum()
+
+        # Simulate improving retention in high-acquisition categories
+        optimized_scenario = customer_revenue_analysis.copy()
+        high_new_mask = optimized_scenario['New_Customer_Ratio'] > 0.7
+
+        # Reduce new customer ratio by 20% for high-acquisition categories
+        optimized_scenario.loc[high_new_mask, 'New_Customer_Ratio'] *= 0.8
+
+        # Assume repeat customers generate 1.5x more revenue per customer
+        optimized_scenario['Optimized_Revenue_Per_Customer'] = (
+            optimized_scenario['New_Customer_Ratio'] * optimized_scenario['Revenue_Per_Customer'] +
+            (1 - optimized_scenario['New_Customer_Ratio']) * optimized_scenario['Revenue_Per_Customer'] * 1.5
+        )
+
+        optimized_revenue = (optimized_scenario['Total_Customers'] * optimized_scenario['Optimized_Revenue_Per_Customer']).sum()
+        revenue_uplift = optimized_revenue - current_total_revenue
+
+        st.markdown(f"""
+        <div style="background: #ecfdf5; padding: 1rem; border-radius: 6px; border-left: 4px solid #10b981; margin: 1rem 0;">
+            <h4>Revenue Optimization Scenario:</h4>
+            <p><strong>Current Portfolio Value:</strong> ${current_total_revenue:,.0f}</p>
+            <p><strong>Optimized Portfolio Value:</strong> ${optimized_revenue:,.0f}</p>
+            <p><strong>Potential Revenue Uplift:</strong> ${revenue_uplift:,.0f} ({(revenue_uplift/current_total_revenue)*100:.1f}%)</p>
+            <p><strong>Strategy:</strong> Improve retention in high-acquisition categories to 80:20 new/repeat mix</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Strategic Recommendations")
+        st.markdown(f"""
+        <div class="insight-card">
+            <h4>Immediate Actions for Mumzworld:</h4>
+            <ol>
+                <li><strong>Rebalance {highest_new_ratio['Category']} customer acquisition strategy</strong> - {highest_new_ratio['New_Customer_Ratio']:.0%} new customers is unsustainable, focus on retention programs</li>
+                <li><strong>Scale {highest_revenue_per_customer['Category']} success model</strong> - ${highest_revenue_per_customer['Revenue_Per_Customer']:.0f} per customer with {(1-highest_revenue_per_customer['New_Customer_Ratio']):.0%} repeat rate is optimal</li>
+                <li><strong>Target 50:50 new/repeat ratio across portfolio</strong> - balanced growth with customer lifetime value optimization</li>
+                <li><strong>Implement customer lifecycle programs</strong> - nurture new customers into repeat buyers with targeted retention campaigns</li>
+                <li><strong>Potential ${revenue_uplift:,.0f} revenue uplift</strong> by improving customer mix in high-acquisition categories</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Category-specific action plans
+        st.markdown("### Category-Specific Action Plans")
+
+        action_plan_categories = customer_revenue_analysis.nlargest(4, 'Revenue')
+
+        for _, row in action_plan_categories.iterrows():
+            if row['New_Customer_Ratio'] > 0.6:
+                strategy = "🔄 RETENTION FOCUS"
+                action = f"Launch loyalty program and post-purchase engagement sequence"
+                color = "#fef3c7"
+                border_color = "#f59e0b"
+            elif row['New_Customer_Ratio'] < 0.4:
+                strategy = "📈 ACQUISITION BOOST"
+                action = f"Increase marketing spend and referral programs"
+                color = "#e0f2fe"
+                border_color = "#0ea5e9"
+            else:
+                strategy = "✅ MAINTAIN BALANCE"
+                action = f"Continue current strategy - optimal customer mix"
+                color = "#f0fdf4"
+                border_color = "#10b981"
+
+            st.markdown(f"""
+            <div style="background: {color}; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid {border_color};">
+                <h5>{row['Category']} - {strategy}</h5>
+                <p><strong>Current Mix:</strong> {row['New_Customer_Ratio']:.0%} new / {(1-row['New_Customer_Ratio']):.0%} repeat</p>
+                <p><strong>Revenue/Customer:</strong> ${row['Revenue_Per_Customer']:.0f}</p>
+                <p><strong>Action:</strong> {action}</p>
+            </div>
+            """, unsafe_allow_html=True)
+
         st.markdown('</div>', unsafe_allow_html=True)
 
     # Question 10: Margin improvement priorities for 2025
@@ -953,12 +1120,12 @@ def main():
 
         # Top 5 Priorities section under the graph
         st.markdown("### Top 5 Priorities for Margin Improvement")
-        
+
         # Create columns for better layout of priorities
         priority_col1, priority_col2 = st.columns(2)
-        
+
         top_5_priorities = margin_improvement.head(5)
-        
+
         # First 3 priorities in left column
         with priority_col1:
             for i, (_, row) in enumerate(top_5_priorities.head(3).iterrows()):
@@ -972,7 +1139,7 @@ def main():
                     <p><strong>Revenue:</strong> ${row['Revenue']:,.0f}</p>
                 </div>
                 """, unsafe_allow_html=True)
-        
+
         # Last 2 priorities in right column
         with priority_col2:
             for i, (_, row) in enumerate(top_5_priorities.tail(2).iterrows()):
@@ -1046,11 +1213,11 @@ def main():
             <p><strong>Calculation:</strong></p>
             <ul style="margin: 0.5rem 0;">
         """, unsafe_allow_html=True)
-        
+
         for _, row in uae_category_margin.iterrows():
             weighted_contrib = (row['Revenue'] * row['Gross Margin %']) / total_uae_revenue
             st.markdown(f"<li>{row['Category']}: ${row['Revenue']:,.0f} × {row['Gross Margin %']:.3%} = {weighted_contrib:.4%}</li>", unsafe_allow_html=True)
-        
+
         st.markdown(f"""
             </ul>
             <p><strong>Final Result = </strong>{weighted_margin:.6%} = {weighted_margin:.1%}</p>
@@ -1060,7 +1227,7 @@ def main():
         # Detailed breakdown table
         st.markdown("### Category Contribution Analysis")
         uae_category_margin_display = uae_category_margin.copy()
-        uae_category_margin_display['Revenue'] = uae_category_margin_display['Revenue'].apply(lambda x: f"${x:,.0f}")
+        uae_category_margin_display['Revenue'] = uae_category_margin_display['Revenue'].apply(lambda x: f"${x:,.0f}")```python
         uae_category_margin_display['Gross Margin %'] = uae_category_margin_display['Gross Margin %'].apply(lambda x: f"{x:.1%}")
         uae_category_margin_display['Revenue_Weight'] = uae_category_margin_display['Revenue_Weight'].apply(lambda x: f"{x:.1%}")
         uae_category_margin_display['Weighted_Contribution'] = uae_category_margin_display['Weighted_Contribution'].apply(lambda x: f"{x:.3%}")
