@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -678,8 +676,158 @@ def main():
         </div>
         """, unsafe_allow_html=True)
 
-        st.markdown('</div>', unsafe_allow_html=True)
+        # Interactive Financial Impact Calculator
+        st.markdown("---")
+        st.markdown("### Interactive Financial Impact Calculator")
+        st.markdown("**Model different scenarios and see immediate profit impact**")
 
+        # Create columns for the calculator
+        calc_col1, calc_col2 = st.columns([1, 1])
+
+        with calc_col1:
+            st.markdown("#### Scenario Modeling")
+
+            # Shipping cost reduction slider
+            shipping_reduction = st.slider(
+                "KSA Shipping Cost Reduction (%)",
+                min_value=0,
+                max_value=30,
+                value=15,
+                step=1,
+                help="Adjust the percentage reduction in KSA shipping costs"
+            )
+
+            # Voucher spend reduction slider  
+            voucher_reduction = st.slider(
+                "Voucher Spend Reduction (%)",
+                min_value=0,
+                max_value=50,
+                value=0,
+                step=5,
+                help="Reduce voucher spending across all categories"
+            )
+
+            # Marketing cost optimization slider
+            marketing_optimization = st.slider(
+                "Marketing Cost Optimization (%)",
+                min_value=-20,
+                max_value=20,
+                value=0,
+                step=5,
+                help="Increase (+) or decrease (-) marketing spend"
+            )
+
+            # Category mix adjustment
+            st.markdown("**Category Mix Adjustments:**")
+            high_margin_boost = st.slider(
+                "High-Margin Categories Revenue Boost (%)",
+                min_value=0,
+                max_value=25,
+                value=0,
+                step=5,
+                help="Boost revenue for categories with >40% margin"
+            )
+
+        with calc_col2:
+            st.markdown("#### Real-Time Impact Analysis")
+
+            # Calculate current baseline
+            ksa_data = df[df['Country'] == 'KSA'] # define ksa_data here
+            baseline_shipping = ksa_data['Shipping Cost'].sum()
+            baseline_voucher = df['Voucher Cost'].sum()
+            baseline_marketing = df['Marketing Cost'].sum()
+            df['Revenue'].sum()
+            baseline_gross_profit = df['Gross_Profit'].sum()
+
+            # Calculate scenario impacts
+            shipping_savings = baseline_shipping * (shipping_reduction / 100)
+            voucher_savings = baseline_voucher * (voucher_reduction / 100)
+            marketing_change = baseline_marketing * (marketing_optimization / 100)
+
+            # High margin category boost calculation
+            high_margin_categories = df[df['Gross Margin %'] > 0.40]
+            high_margin_revenue = high_margin_categories['Revenue'].sum()
+            revenue_boost = high_margin_revenue * (high_margin_boost / 100)
+            additional_gross_profit = revenue_boost * high_margin_categories['Gross Margin %'].mean()
+
+            # Total impact calculation
+            total_cost_savings = shipping_savings + voucher_savings - marketing_change
+            total_profit_impact = total_cost_savings + additional_gross_profit
+            roi_percentage = (total_profit_impact / baseline_gross_profit) * 100
+
+            # Display results
+            st.markdown(f"""
+            <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; border-left: 4px solid #0ea5e9;">
+                <h4>Scenario Results</h4>
+                <p><strong> Total Profit Impact:</strong> <span style="color: {'#059669' if total_profit_impact > 0 else '#dc2626'};">${total_profit_impact:+,.0f}</span></p>
+                <p><strong> ROI Impact:</strong> <span style="color: {'#059669' if roi_percentage > 0 else '#dc2626'};">{roi_percentage:+.1f}%</span></p>
+                <hr>
+                <p><strong>Component Breakdown:</strong></p>
+                <ul>
+                    <li>Shipping Savings: ${shipping_savings:,.0f}</li>
+                    <li>Voucher Savings: ${voucher_savings:,.0f}</li>
+                    <li>Marketing Change: ${marketing_change:+,.0f}</li>
+                    <li>Revenue Boost Impact: ${additional_gross_profit:,.0f}</li>
+                </ul>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # ROI Calculator for specific initiatives
+            st.markdown("#### Initiative ROI Calculator")
+
+            # Investment amount input
+            investment_amount = st.number_input(
+                "Investment Amount ($)",
+                min_value=0,
+                max_value=10000000,
+                value=50000,
+                step=10000,
+                help="Enter the investment required for implementation"
+            )
+
+            if investment_amount > 0:
+                payback_months = (investment_amount / (total_profit_impact / 12)) if total_profit_impact > 0 else float('inf')
+                roi_ratio = (total_profit_impact / investment_amount) if investment_amount > 0 else 0
+
+                st.markdown(f"""
+                <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <h4>Investment Analysis</h4>
+                    <p><strong> Investment:</strong> ${investment_amount:,.0f}</p>
+                    <p><strong> Payback Period:</strong> {payback_months:.1f} months</p>
+                    <p><strong> ROI Ratio:</strong> {roi_ratio:.1f}x</p>
+                    <p><strong> Annual Return:</strong> {(roi_ratio-1)*100:+.0f}%</p>
+                </div>
+                """, unsafe_allow_html=True)
+
+        # Quick scenario buttons
+        st.markdown("#### Quick Scenario Templates")
+
+        scenario_col1, scenario_col2, scenario_col3 = st.columns(3)
+
+        with scenario_col1:
+            if st.button(" Conservative Plan", help="15% shipping, 10% voucher reduction"):
+                shipping_reduction = 15
+                voucher_reduction = 10
+                marketing_optimization = 0
+                high_margin_boost = 5
+                st.rerun()
+
+        with scenario_col2:
+            if st.button(" Aggressive Plan", help="25% shipping, 20% voucher, 10% marketing cut, 15% high-margin boost"):
+                shipping_reduction = 25
+                voucher_reduction = 20
+                marketing_optimization = -10
+                high_margin_boost = 15
+                st.rerun()
+
+        with scenario_col3:
+            if st.button(" Growth Plan", help="15% shipping reduction, 15% marketing increase, 20% high-margin boost"):
+                shipping_reduction = 15
+                voucher_reduction = 5
+                marketing_optimization = 15
+                high_margin_boost = 20
+                st.rerun()
+   
     # Question 7: Strong repurchase behavior at low cost
     st.markdown('<div class="question-header">Q7: Which category shows strong repurchase behavior at low cost?</div>', unsafe_allow_html=True)
 
@@ -713,7 +861,7 @@ def main():
 
         # Efficiency Champions section under the graph
         st.markdown("### Efficiency Champions")
-        
+
         # Calculation methodology
         st.markdown("### Calculation Methodology")
         top_efficient = repurchase_efficiency.iloc[0]
@@ -730,9 +878,9 @@ def main():
 
         # Create three columns for the efficiency champions
         eff_col1, eff_col2, eff_col3 = st.columns(3)
-        
+
         top_3_efficient = repurchase_efficiency.head(3)
-        
+
         with eff_col1:
             row = top_3_efficient.iloc[0]
             st.markdown(f"""
@@ -743,7 +891,7 @@ def main():
                 <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
             </div>
             """, unsafe_allow_html=True)
-            
+
         with eff_col2:
             row = top_3_efficient.iloc[1]
             st.markdown(f"""
@@ -754,7 +902,7 @@ def main():
                 <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
             </div>
             """, unsafe_allow_html=True)
-            
+
         with eff_col3:
             row = top_3_efficient.iloc[2]
             st.markdown(f"""
@@ -776,10 +924,10 @@ def main():
 
         churn_analysis = df.groupby('Country').agg({
             'Customer Churn Rate': 'mean',
-            'SLA Compliance %': 'mean',
             'Avg Delivery Time (days)': 'mean',
             'Success Rate': 'mean',
-            'Repurchase Rate': 'mean'
+            'Marketing_Cost_Per_Order': 'mean',
+            'Voucher_Cost_Per_Order': 'mean'
         }).reset_index()
 
         col1, col2 = st.columns(2)
@@ -797,12 +945,12 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            # Correlation analysis for churn drivers
+            # Correlation analysis for churn drivers (excluding SLA since it shows no correlation with repurchase)
             churn_correlations = pd.Series({
-                'SLA Compliance %': np.corrcoef(df['Customer Churn Rate'], df['SLA Compliance %'])[0, 1],
                 'Avg Delivery Time (days)': np.corrcoef(df['Customer Churn Rate'], df['Avg Delivery Time (days)'])[0, 1],
                 'Success Rate': np.corrcoef(df['Customer Churn Rate'], df['Success Rate'])[0, 1],
-                'Voucher_Cost_Per_Order': np.corrcoef(df['Customer Churn Rate'], df['Voucher_Cost_Per_Order'])[0, 1]
+                'Marketing Cost/Order': np.corrcoef(df['Customer Churn Rate'], df['Marketing_Cost_Per_Order'])[0, 1],
+                'Voucher Cost/Order': np.corrcoef(df['Customer Churn Rate'], df['Voucher_Cost_Per_Order'])[0, 1]
             })
 
             fig2 = px.bar(
@@ -819,12 +967,51 @@ def main():
         # Key insights
         highest_churn_country = churn_analysis.loc[churn_analysis['Customer Churn Rate'].idxmax(), 'Country']
         highest_churn_rate = churn_analysis['Customer Churn Rate'].max()
+        strongest_driver = churn_correlations.abs().idxmax()
+        strongest_correlation = churn_correlations[strongest_driver]
+
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown("""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Churn Driver Analysis (Excluding SLA):</h4>
+            <p><strong>Note:</strong> SLA Compliance excluded from analysis as Q3 established no correlation with customer behavior</p>
+            <p><strong>Churn Rate by Country = </strong>groupby('Country').mean('Customer_Churn_Rate')</p>
+            <p><strong>Primary Driver Correlations:</strong></p>
+            <ul>
+        """, unsafe_allow_html=True)
+
+        for metric, corr in churn_correlations.items():
+            st.markdown(f"<li>{metric}: {corr:.3f} correlation</li>", unsafe_allow_html=True)
 
         st.markdown(f"""
+            </ul>
+            <p><strong>Strongest Driver:</strong> {strongest_driver} with {strongest_correlation:.3f} correlation</p>
+            <p><strong>Highest Churn Market:</strong> {highest_churn_country} = {highest_churn_rate:.3%}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Key Data Insights")
+        st.markdown(f"""
         <div class="insight-card">
-            <h3>Churn Analysis Summary</h3>
-            <p><strong>Highest churn rate:</strong> {highest_churn_country} ({highest_churn_rate:.1%})</p>
-            <p><strong>Key drivers:</strong> Based on correlations, focus on improving delivery performance and SLA compliance</p>
+            <h4>Top 3 Strategic Insights:</h4>
+            <ol>
+                <li><strong>{highest_churn_country} shows higher churn at {highest_churn_rate:.1%}</strong> vs other market - requires targeted intervention</li>
+                <li><strong>{strongest_driver} is the primary churn driver</strong> with {strongest_correlation:.3f} correlation - focus optimization here</li>
+                <li><strong>Delivery performance and success rates</strong> show meaningful impact on churn - operational excellence matters</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("### Strategic Recommendations")
+        st.markdown(f"""
+        <div class="insight-card">
+            <h4>Immediate Actions for Mumzworld:</h4>
+            <ol>
+                <li><strong>Launch {highest_churn_country} retention program</strong> - focus on improving delivery speed and success rates</li>
+                <li><strong>Optimize {str(strongest_driver).lower()}</strong> as primary churn reduction lever</li>
+                <li><strong>Implement predictive churn alerts</strong> based on delivery performance metrics</li>
+            </ol>
         </div>
         """, unsafe_allow_html=True)
 
@@ -876,6 +1063,54 @@ def main():
             fig2.update_layout(height=350)
             st.plotly_chart(fig2, use_container_width=True)
 
+        # Calculate key insights
+        highest_new_ratio = customer_revenue_analysis.loc[customer_revenue_analysis['New_Customer_Ratio'].idxmax()]
+        highest_revenue_per_customer = customer_revenue_analysis.loc[customer_revenue_analysis['Revenue_Per_Customer'].idxmax()]
+
+        # Find optimal balance categories (40-60% new customer ratio)
+        balanced_categories = customer_revenue_analysis[
+            (customer_revenue_analysis['New_Customer_Ratio'] >= 0.4) & 
+            (customer_revenue_analysis['New_Customer_Ratio'] <= 0.6)
+        ]
+
+        # Calculate repeat customer value vs new customer acquisition
+        total_new_customers = customer_revenue_analysis['New Customers'].sum()
+        total_repeat_customers = customer_revenue_analysis['Repeat Customers'].sum()
+        total_revenue = customer_revenue_analysis['Revenue'].sum()
+
+        new_customer_revenue_share = (customer_revenue_analysis['New Customers'] * customer_revenue_analysis['Revenue_Per_Customer']).sum() / total_revenue
+        repeat_customer_revenue_share = 1 - new_customer_revenue_share
+
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Customer Revenue Impact Analysis:</h4>
+            <p><strong>New Customer Ratio = </strong>New_Customers ÷ (New_Customers + Repeat_Customers) by Category</p>
+            <p><strong>Revenue per Customer = </strong>Total_Revenue ÷ Total_Customers by Category</p>
+            <p><strong>Portfolio Analysis:</strong></p>
+            <ul>
+                <li>Total New Customers: {total_new_customers:,.0f} ({total_new_customers/(total_new_customers+total_repeat_customers):.1%})</li>
+                <li>Total Repeat Customers: {total_repeat_customers:,.0f} ({total_repeat_customers/(total_new_customers+total_repeat_customers):.1%})</li>
+                <li>New Customer Revenue Share: {new_customer_revenue_share:.1%}</li>
+                <li>Repeat Customer Revenue Share: {repeat_customer_revenue_share:.1%}</li>
+            </ul>
+            <p><strong>Top New Customer Category:</strong> {highest_new_ratio['Category']} = {highest_new_ratio['New_Customer_Ratio']:.3%}</p>
+            <p><strong>Highest Revenue/Customer:</strong> {highest_revenue_per_customer['Category']} = ${highest_revenue_per_customer['Revenue_Per_Customer']:.0f}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Key Data Insights")
+        st.markdown(f"""
+        <div class="insight-card">
+            <h4>Top 3 Strategic Insights:</h4>
+            <ol>
+                <li><strong>{highest_new_ratio['Category']} shows highest new customer dependency</strong> at {highest_new_ratio['New_Customer_Ratio']:.1%} but only ${highest_new_ratio['Revenue_Per_Customer']:.0f} revenue per customer - growth focused but low value</li>
+                <li><strong>{highest_revenue_per_customer['Category']} generates highest value per customer</strong> at ${highest_revenue_per_customer['Revenue_Per_Customer']:.0f} with {highest_revenue_per_customer['New_Customer_Ratio']:.1%} new customer ratio - premium retention model</li>
+                <li><strong>Balanced categories (40-60% new/repeat) show optimal performance</strong> - {len(balanced_categories)} categories achieve sustainable growth with customer lifetime value</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
     # Question 10: Margin improvement priorities for 2025
@@ -914,17 +1149,17 @@ def main():
 
         # Top 5 Priorities section under the graph
         st.markdown("### Top 5 Priorities for Margin Improvement")
-        
+
         # Create columns for better layout of priorities
         priority_col1, priority_col2 = st.columns(2)
-        
+
         top_5_priorities = margin_improvement.head(5)
-        
+
         # First 3 priorities in left column
         with priority_col1:
             for i, (_, row) in enumerate(top_5_priorities.head(3).iterrows()):
                 priority_score = row['Improvement_Potential'] / margin_improvement['Improvement_Potential'].max() * 100
-                rank_emoji = ["🥇", "🥈", "🥉"][i]
+                rank_emoji = ["", "", ""][i]
                 st.markdown(f"""
                 <div style="background: #f8f9fa; padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #dc2626;">
                     <h4>{rank_emoji} {row['Country']} - {row['Category']}</h4>
@@ -933,7 +1168,7 @@ def main():
                     <p><strong>Revenue:</strong> ${row['Revenue']:,.0f}</p>
                 </div>
                 """, unsafe_allow_html=True)
-        
+
         # Last 2 priorities in right column
         with priority_col2:
             for i, (_, row) in enumerate(top_5_priorities.tail(2).iterrows()):
@@ -1007,11 +1242,11 @@ def main():
             <p><strong>Calculation:</strong></p>
             <ul style="margin: 0.5rem 0;">
         """, unsafe_allow_html=True)
-        
+
         for _, row in uae_category_margin.iterrows():
             weighted_contrib = (row['Revenue'] * row['Gross Margin %']) / total_uae_revenue
             st.markdown(f"<li>{row['Category']}: ${row['Revenue']:,.0f} × {row['Gross Margin %']:.3%} = {weighted_contrib:.4%}</li>", unsafe_allow_html=True)
-        
+
         st.markdown(f"""
             </ul>
             <p><strong>Final Result = </strong>{weighted_margin:.6%} = {weighted_margin:.1%}</p>
@@ -1082,7 +1317,7 @@ def main():
         top_repurchase_categories = repurchase_margin_analysis.nlargest(3, 'Repurchase Rate')
 
         st.markdown("### Recommended Growth Strategy")
-        st.markdown(f"""
+        st.markdown("""
         <div class="insight-card">
             <h4>High-Repurchase Categories to Prioritize:</h4>
             <ul>
@@ -1220,7 +1455,7 @@ def main():
         """, unsafe_allow_html=True)
 
     # Strategic insights from the analysis
-    st.markdown(f"""
+    st.markdown("""
     <div class="insight-card">
         <h3>Key Strategic Findings</h3>
         <p>This comprehensive analysis of Mumzworld's business performance reveals significant opportunities for optimization across multiple dimensions:</p>
@@ -1257,6 +1492,21 @@ def main():
         <p>Mumzworld Business Analytics Dashboard</p>
         <p>Built for Graduate Management Trainee Programme Assessment</p>
         <p><em>All insights based on comprehensive performance data analysis</em></p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Suggestions for taking dashboard one step further
+    st.markdown("### Suggestions for Dashboard Enhancement")
+    st.markdown("""
+    <div class="insight-card">
+        <h4>Potential Enhancements:</h4>
+        <ol>
+            <li><strong>Predictive Analytics:</strong> Implement forecasting models for revenue, churn, and demand to anticipate future trends and optimize resource allocation.</li>
+            <li><strong>Real-time Data Integration:</strong> Connect the dashboard to live data sources for up-to-the-minute insights and faster decision-making.</li>
+            <li><strong>Interactive Scenario Planning:</strong> Allow users to simulate the impact of different strategies and investments on key performance indicators.</li>
+            <li><strong>Customer Segmentation:</strong> Incorporate advanced customer segmentation techniques to identify high-value customers and tailor marketing efforts accordingly.</li>
+            <li><strong>A/B Testing Module:</strong> Integrate a module to track and analyze the results of A/B tests, enabling continuous improvement of marketing campaigns and website design.</li>
+        </ol>
     </div>
     """, unsafe_allow_html=True)
 
