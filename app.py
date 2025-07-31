@@ -1,4 +1,3 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -201,6 +200,18 @@ def main():
             fig.update_layout(height=350, yaxis={'categoryorder': 'total ascending'})
             st.plotly_chart(fig, use_container_width=True)
 
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Formula Used:</h4>
+            <p><strong>Gross Margin Analysis = </strong>groupby(['Country', 'Category']).agg({{'Gross Margin %': 'mean', 'Revenue': 'sum'}})</p>
+            <p><strong>Top Performer Identification = </strong>sort_values('Gross Margin %', ascending=False).iloc[0]</p>
+            <p><strong>Data Filtered:</strong> Year == 2024 only</p>
+            <p><strong>Result:</strong> {top_combo['Country']} {top_combo['Category']} with {top_combo['Gross Margin %']:.3%} margin</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         # Key Insights Section
         st.markdown("### Key Data Insights")
         st.markdown(f"""
@@ -281,6 +292,18 @@ def main():
         high_voucher = voucher_analysis.iloc[0]
         avg_voucher_ratio = voucher_analysis['Voucher_Revenue_Ratio'].mean()
 
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Formulas Used:</h4>
+            <p><strong>Voucher Cost per Order = </strong>Voucher Cost ÷ Orders</p>
+            <p><strong>Voucher Revenue Ratio = </strong>Voucher Cost ÷ Revenue</p>
+            <p><strong>Average Voucher Ratio = </strong>mean(Voucher_Revenue_Ratio) = {avg_voucher_ratio:.3%}</p>
+            <p><strong>Highest Spender:</strong> {high_voucher['Country']} {high_voucher['Category']} = ${high_voucher['Voucher Cost']:,.0f} ÷ ${high_voucher['Revenue']:,.0f} = {high_voucher['Voucher_Revenue_Ratio']:.3%}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("### Key Data Insights")
         st.markdown(f"""
         <div class="insight-card">
@@ -350,6 +373,19 @@ def main():
         # Calculate high vs low SLA performance
         high_sla = df[df['SLA Compliance %'] > df['SLA Compliance %'].median()]
         low_sla = df[df['SLA Compliance %'] <= df['SLA Compliance %'].median()]
+
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Statistical Analysis:</h4>
+            <p><strong>Correlation Coefficient = </strong>np.corrcoef(SLA_Compliance_%, Repurchase_Rate)[0,1] = {correlation:.6f}</p>
+            <p><strong>SLA Median Threshold = </strong>{df['SLA Compliance %'].median():.1%}</p>
+            <p><strong>High SLA Performance = </strong>mean(Repurchase_Rate where SLA > median) = {high_sla['Repurchase Rate'].mean():.3%}</p>
+            <p><strong>Low SLA Performance = </strong>mean(Repurchase_Rate where SLA ≤ median) = {low_sla['Repurchase Rate'].mean():.3%}</p>
+            <p><strong>Interpretation:</strong> Correlation {correlation:.3f} indicates minimal relationship</p>
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown("### Key Data Insights")
         st.markdown(f"""
@@ -429,6 +465,18 @@ def main():
         high_cost_repurchase = marketing_repurchase[high_cost_categories].mean()
         low_cost_repurchase = marketing_repurchase[low_cost_categories].mean()
 
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Marketing Efficiency Formulas:</h4>
+            <p><strong>Marketing Cost per Order = </strong>sum(Marketing_Cost) ÷ sum(Orders) by Category</p>
+            <p><strong>Marketing Revenue Ratio = </strong>sum(Marketing_Cost) ÷ sum(Revenue) by Category</p>
+            <p><strong>Highest Cost Category:</strong> {highest_cost['Category']} = ${highest_cost['Marketing Cost']:,.0f} ÷ {highest_cost['Orders']:,.0f} orders = ${highest_cost['Marketing_Per_Order']:.2f}</p>
+            <p><strong>Efficiency Gap:</strong> ${highest_cost['Marketing_Per_Order']:.2f} vs ${lowest_cost['Marketing_Per_Order']:.2f} = {((highest_cost['Marketing_Per_Order']/lowest_cost['Marketing_Per_Order'])-1)*100:.0f}% difference</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("### Key Data Insights")
         st.markdown(f"""
         <div class="insight-card">
@@ -502,6 +550,19 @@ def main():
 
         # Fastest delivery for comparison
         fastest_delivery = delivery_analysis.loc[delivery_analysis['Avg Delivery Time (days)'].idxmin()]
+
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Delivery Performance Analysis:</h4>
+            <p><strong>Delivery Time Analysis = </strong>groupby(['Country', 'Category']).agg({{'Avg_Delivery_Time': 'mean', 'Success_Rate': 'mean'}})</p>
+            <p><strong>Correlation Coefficient = </strong>np.corrcoef(Avg_Delivery_Time, Success_Rate)[0,1] = {delivery_success_corr:.6f}</p>
+            <p><strong>Slowest Segment:</strong> {slowest_delivery['Country']} {slowest_delivery['Category']} = {slowest_delivery['Avg Delivery Time (days)']:.2f} days</p>
+            <p><strong>Fastest Segment:</strong> {fastest_delivery['Country']} {fastest_delivery['Category']} = {fastest_delivery['Avg Delivery Time (days)']:.2f} days</p>
+            <p><strong>Performance Gap:</strong> {slowest_delivery['Avg Delivery Time (days)']:.1f} - {fastest_delivery['Avg Delivery Time (days)']:.1f} = {slowest_delivery['Avg Delivery Time (days)'] - fastest_delivery['Avg Delivery Time (days)']:.1f} days difference</p>
+        </div>
+        """, unsafe_allow_html=True)
 
         st.markdown("### Key Data Insights")
         st.markdown(f"""
@@ -580,6 +641,19 @@ def main():
         # Calculate per order savings
         per_order_savings = savings / ksa_data['Orders'].sum()
 
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>KSA Shipping Cost Impact Analysis:</h4>
+            <p><strong>Current KSA Shipping Cost = </strong>sum(Shipping_Cost where Country='KSA') = ${current_shipping:,.0f}</p>
+            <p><strong>15% Reduction Savings = </strong>${current_shipping:,.0f} × 0.15 = ${savings:,.0f}</p>
+            <p><strong>Current KSA Gross Profit = </strong>sum(Revenue × Gross_Margin_% where Country='KSA') = ${current_gross_profit:,.0f}</p>
+            <p><strong>Profit Impact = </strong>${savings:,.0f} ÷ ${current_gross_profit:,.0f} = {profit_increase:.3%} improvement</p>
+            <p><strong>Per Order Savings = </strong>${savings:,.0f} ÷ {ksa_data['Orders'].sum():,.0f} orders = ${per_order_savings:.2f}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("### Key Data Insights")
         st.markdown(f"""
         <div class="insight-card">
@@ -640,6 +714,20 @@ def main():
         # Efficiency Champions section under the graph
         st.markdown("### Efficiency Champions")
         
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        top_efficient = repurchase_efficiency.iloc[0]
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Repurchase Efficiency Analysis:</h4>
+            <p><strong>Efficiency Score Formula = </strong>Repurchase_Rate ÷ Marketing_Cost_Per_Order</p>
+            <p><strong>Winner: {top_efficient['Category']} = </strong>{top_efficient['Repurchase Rate']:.3%} ÷ ${top_efficient['Marketing_Cost_Per_Order']:.2f} = {top_efficient['Efficiency_Score']:.6f}</p>
+            <p><strong>Portfolio Average = </strong>{repurchase_efficiency['Efficiency_Score'].mean():.6f}</p>
+            <p><strong>Performance vs Average = </strong>{((top_efficient['Efficiency_Score']/repurchase_efficiency['Efficiency_Score'].mean())-1)*100:.0f}% above average</p>
+            <p><strong>Interpretation:</strong> Higher score = better repurchase rate per dollar spent</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         # Create three columns for the efficiency champions
         eff_col1, eff_col2, eff_col3 = st.columns(3)
         
@@ -909,6 +997,27 @@ def main():
             fig.update_layout(height=350)
             st.plotly_chart(fig, use_container_width=True)
 
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Weighted Average Margin Formula:</h4>
+            <p><strong>Weighted Margin = </strong>Σ(Revenue_i × Gross_Margin_i) ÷ Σ(Revenue_i)</p>
+            <p><strong>Total UAE Revenue = </strong>sum(Revenue where Country='UAE') = ${total_uae_revenue:,.0f}</p>
+            <p><strong>Calculation:</strong></p>
+            <ul style="margin: 0.5rem 0;">
+        """, unsafe_allow_html=True)
+        
+        for _, row in uae_category_margin.iterrows():
+            weighted_contrib = (row['Revenue'] * row['Gross Margin %']) / total_uae_revenue
+            st.markdown(f"<li>{row['Category']}: ${row['Revenue']:,.0f} × {row['Gross Margin %']:.3%} = {weighted_contrib:.4%}</li>", unsafe_allow_html=True)
+        
+        st.markdown(f"""
+            </ul>
+            <p><strong>Final Result = </strong>{weighted_margin:.6%} = {weighted_margin:.1%}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
         # Detailed breakdown table
         st.markdown("### Category Contribution Analysis")
         uae_category_margin_display = uae_category_margin.copy()
@@ -1006,6 +1115,23 @@ def main():
         # New weighted margin
         new_weighted_margin = (optimized_mix['Revenue_Share'] * optimized_mix['Gross Margin %']).sum()
         margin_improvement = new_weighted_margin - current_weighted_margin
+
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Portfolio Optimization Analysis:</h4>
+            <p><strong>Current Weighted Margin = </strong>Σ(Category_Revenue_Share × Category_Margin) = {current_weighted_margin:.4%}</p>
+            <p><strong>Optimization Strategy:</strong></p>
+            <ul>
+                <li>Increase high-repurchase categories by 20%: {', '.join(top_repurchase_categories['Category'].tolist())}</li>
+                <li>Decrease other categories by 15% proportionally</li>
+                <li>Normalize shares to sum = 1.0</li>
+            </ul>
+            <p><strong>New Weighted Margin = </strong>Σ(Optimized_Share × Category_Margin) = {new_weighted_margin:.4%}</p>
+            <p><strong>Improvement = </strong>{new_weighted_margin:.4%} - {current_weighted_margin:.4%} = +{margin_improvement:.4%} ({margin_improvement*100:.1f} basis points)</p>
+        </div>
+        """, unsafe_allow_html=True)
 
         col1, col2 = st.columns(2)
 
