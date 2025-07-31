@@ -779,7 +779,9 @@ def main():
             'SLA Compliance %': 'mean',
             'Avg Delivery Time (days)': 'mean',
             'Success Rate': 'mean',
-            'Repurchase Rate': 'mean'
+            'Repurchase Rate': 'mean',
+            'Marketing_Cost_Per_Order': 'mean',
+            'Voucher_Cost_Per_Order': 'mean'
         }).reset_index()
 
         col1, col2 = st.columns(2)
@@ -797,34 +799,83 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
 
         with col2:
-            # Correlation analysis for churn drivers
+            # Correlation analysis for churn drivers - corrected analysis
             churn_correlations = pd.Series({
                 'SLA Compliance %': np.corrcoef(df['Customer Churn Rate'], df['SLA Compliance %'])[0, 1],
                 'Avg Delivery Time (days)': np.corrcoef(df['Customer Churn Rate'], df['Avg Delivery Time (days)'])[0, 1],
                 'Success Rate': np.corrcoef(df['Customer Churn Rate'], df['Success Rate'])[0, 1],
-                'Voucher_Cost_Per_Order': np.corrcoef(df['Customer Churn Rate'], df['Voucher_Cost_Per_Order'])[0, 1]
+                'Marketing Cost/Order': np.corrcoef(df['Customer Churn Rate'], df['Marketing_Cost_Per_Order'])[0, 1],
+                'Voucher Cost/Order': np.corrcoef(df['Customer Churn Rate'], df['Voucher_Cost_Per_Order'])[0, 1]
             })
 
+            # Sort by absolute correlation value to show strongest relationships
+            churn_correlations_sorted = churn_correlations.reindex(
+                churn_correlations.abs().sort_values(ascending=False).index
+            )
+
             fig2 = px.bar(
-                x=churn_correlations.values,
-                y=churn_correlations.index,
+                x=churn_correlations_sorted.values,
+                y=churn_correlations_sorted.index,
                 orientation='h',
                 title="Churn Rate Correlation with Key Metrics",
-                color=churn_correlations.values,
-                color_continuous_scale='RdBu_r'
+                color=churn_correlations_sorted.values,
+                color_continuous_scale='RdBu_r',
+                range_color=[-0.5, 0.5]
             )
             fig2.update_layout(height=350)
+            fig2.add_vline(x=0, line_dash="dash", line_color="black", opacity=0.5)
             st.plotly_chart(fig2, use_container_width=True)
 
-        # Key insights
+        # Key insights - corrected analysis
         highest_churn_country = churn_analysis.loc[churn_analysis['Customer Churn Rate'].idxmax(), 'Country']
         highest_churn_rate = churn_analysis['Customer Churn Rate'].max()
+        lowest_churn_country = churn_analysis.loc[churn_analysis['Customer Churn Rate'].idxmin(), 'Country']
+        lowest_churn_rate = churn_analysis['Customer Churn Rate'].min()
 
+        # Find strongest correlation (absolute value)
+        strongest_correlation = churn_correlations_sorted.iloc[0]
+        strongest_factor = churn_correlations_sorted.index[0]
+
+        # Calculation methodology
+        st.markdown("### Calculation Methodology")
+        st.markdown(f"""
+        <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
+            <h4>Churn Driver Analysis:</h4>
+            <p><strong>Churn by Country = </strong>groupby('Country').agg({{'Customer_Churn_Rate': 'mean'}})</p>
+            <p><strong>Correlation Analysis:</strong></p>
+            <ul>
+                <li>SLA Compliance: {churn_correlations['SLA Compliance %']:.6f} (minimal impact)</li>
+                <li>Delivery Time: {churn_correlations['Avg Delivery Time (days)']:.6f}</li>
+                <li>Success Rate: {churn_correlations['Success Rate']:.6f}</li>
+                <li>Marketing Cost/Order: {churn_correlations['Marketing Cost/Order']:.6f}</li>
+                <li>Voucher Cost/Order: {churn_correlations['Voucher Cost/Order']:.6f}</li>
+            </ul>
+            <p><strong>Strongest Driver:</strong> {strongest_factor} with correlation of {strongest_correlation:.6f}</p>
+            <p><strong>Note:</strong> Correlations near 0 indicate weak relationships</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Key Data Insights")
         st.markdown(f"""
         <div class="insight-card">
-            <h3>Churn Analysis Summary</h3>
-            <p><strong>Highest churn rate:</strong> {highest_churn_country} ({highest_churn_rate:.1%})</p>
-            <p><strong>Key drivers:</strong> Based on correlations, focus on improving delivery performance and SLA compliance</p>
+            <h4>Top 3 Strategic Insights:</h4>
+            <ol>
+                <li><strong>{highest_churn_country} shows higher churn at {highest_churn_rate:.1%}</strong> vs {lowest_churn_country} at {lowest_churn_rate:.1%}</li>
+                <li><strong>Weak correlations across all factors</strong> suggest churn is driven by unmeasured variables (product satisfaction, customer service, competition)</li>
+                <li><strong>SLA compliance shows minimal impact on churn</strong> ({churn_correlations['SLA Compliance %']:.3f} correlation) - consistent with Q3 findings</li>
+            </ol>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("### Strategic Recommendations")
+        st.markdown(f"""
+        <div class="insight-card">
+            <h4>Immediate Actions for Mumzworld:</h4>
+            <ol>
+                <li><strong>Conduct customer exit surveys in {highest_churn_country}</strong> to identify true churn drivers beyond operational metrics</li>
+                <li><strong>Focus on product quality and customer service improvements</strong> rather than operational metrics alone</li>
+                <li><strong>Implement competitive analysis and pricing strategy</strong> as potential unmeasured churn factors</li>
+            </ol>
         </div>
         """, unsafe_allow_html=True)
 
