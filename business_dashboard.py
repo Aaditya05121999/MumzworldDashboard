@@ -623,32 +623,59 @@ def main():
         repurchase_efficiency['Efficiency_Score'] = repurchase_efficiency['Repurchase Rate'] / repurchase_efficiency['Marketing_Cost_Per_Order']
         repurchase_efficiency = repurchase_efficiency.sort_values('Efficiency_Score', ascending=False)
 
-        col1, col2 = st.columns([2, 1])
+        # Center the graph
+        fig = px.scatter(
+            repurchase_efficiency,
+            x='Marketing_Cost_Per_Order',
+            y='Repurchase Rate',
+            size='Revenue',
+            color='Category',
+            title="Repurchase Rate vs Marketing Cost per Order",
+            labels={'Marketing_Cost_Per_Order': 'Marketing Cost per Order ($)'}
+        )
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
 
-        with col1:
-            fig = px.scatter(
-                repurchase_efficiency,
-                x='Marketing_Cost_Per_Order',
-                y='Repurchase Rate',
-                size='Revenue',
-                color='Category',
-                title="Repurchase Rate vs Marketing Cost per Order",
-                labels={'Marketing_Cost_Per_Order': 'Marketing Cost per Order ($)'}
-            )
-            fig.update_layout(height=350)
-            st.plotly_chart(fig, use_container_width=True)
-
-        with col2:
-            st.markdown("### Efficiency Champions")
-            for i, row in repurchase_efficiency.head(3).iterrows():
-                st.markdown(f"""
-                <div class="insight-card">
-                    <h4>{row['Category']}</h4>
-                    <p><strong>Repurchase Rate:</strong> {row['Repurchase Rate']:.1%}</p>
-                    <p><strong>Marketing Cost/Order:</strong> ${row['Marketing_Cost_Per_Order']:.2f}</p>
-                    <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
-                </div>
-                """, unsafe_allow_html=True)
+        # Efficiency Champions section under the graph
+        st.markdown("### Efficiency Champions")
+        
+        # Create three columns for the efficiency champions
+        eff_col1, eff_col2, eff_col3 = st.columns(3)
+        
+        top_3_efficient = repurchase_efficiency.head(3)
+        
+        with eff_col1:
+            row = top_3_efficient.iloc[0]
+            st.markdown(f"""
+            <div class="insight-card">
+                <h4>🥇 {row['Category']}</h4>
+                <p><strong>Repurchase Rate:</strong> {row['Repurchase Rate']:.1%}</p>
+                <p><strong>Marketing Cost/Order:</strong> ${row['Marketing_Cost_Per_Order']:.2f}</p>
+                <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with eff_col2:
+            row = top_3_efficient.iloc[1]
+            st.markdown(f"""
+            <div class="insight-card">
+                <h4>🥈 {row['Category']}</h4>
+                <p><strong>Repurchase Rate:</strong> {row['Repurchase Rate']:.1%}</p>
+                <p><strong>Marketing Cost/Order:</strong> ${row['Marketing_Cost_Per_Order']:.2f}</p>
+                <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+        with eff_col3:
+            row = top_3_efficient.iloc[2]
+            st.markdown(f"""
+            <div class="insight-card">
+                <h4>🥉 {row['Category']}</h4>
+                <p><strong>Repurchase Rate:</strong> {row['Repurchase Rate']:.1%}</p>
+                <p><strong>Marketing Cost/Order:</strong> ${row['Marketing_Cost_Per_Order']:.2f}</p>
+                <p><strong>Efficiency Score:</strong> {row['Efficiency_Score']:.3f}</p>
+            </div>
+            """, unsafe_allow_html=True)
 
         st.markdown('</div>', unsafe_allow_html=True)
 
@@ -782,29 +809,50 @@ def main():
         margin_improvement['Improvement_Potential'] = margin_improvement['Revenue'] * (1 - margin_improvement['Gross Margin %']) * margin_improvement['Cost_Revenue_Ratio']
         margin_improvement = margin_improvement.sort_values('Improvement_Potential', ascending=False)
 
-        col1, col2 = st.columns([2, 1])
+        # Center the graph
+        fig = px.scatter(
+            margin_improvement.head(8),
+            x='Gross Margin %',
+            y='Revenue',
+            size='Improvement_Potential',
+            color='Cost_Revenue_Ratio',
+            hover_data=['Country', 'Category'],
+            title="Margin Improvement Opportunities (Size = Potential Impact)",
+            color_continuous_scale='Reds'
+        )
+        fig.update_layout(height=400)
+        st.plotly_chart(fig, use_container_width=True)
 
-        with col1:
-            fig = px.scatter(
-                margin_improvement.head(8),
-                x='Gross Margin %',
-                y='Revenue',
-                size='Improvement_Potential',
-                color='Cost_Revenue_Ratio',
-                hover_data=['Country', 'Category'],
-                title="Margin Improvement Opportunities (Size = Potential Impact)",
-                color_continuous_scale='Reds'
-            )
-            fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
-
-        with col2:
-            st.markdown("### Top 5 Priorities")
-            for i, row in margin_improvement.head(5).iterrows():
+        # Top 5 Priorities section under the graph
+        st.markdown("### Top 5 Priorities for Margin Improvement")
+        
+        # Create columns for better layout of priorities
+        priority_col1, priority_col2 = st.columns(2)
+        
+        top_5_priorities = margin_improvement.head(5)
+        
+        # First 3 priorities in left column
+        with priority_col1:
+            for i, (_, row) in enumerate(top_5_priorities.head(3).iterrows()):
                 priority_score = row['Improvement_Potential'] / margin_improvement['Improvement_Potential'].max() * 100
+                rank_emoji = ["🥇", "🥈", "🥉"][i]
                 st.markdown(f"""
-                <div style="background: #f8f9fa; padding: 1rem; margin: 0.5rem 0; border-radius: 6px; border-left: 4px solid #dc2626;">
-                    <h4>{row['Country']} - {row['Category']}</h4>
+                <div style="background: #f8f9fa; padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #dc2626;">
+                    <h4>{rank_emoji} {row['Country']} - {row['Category']}</h4>
+                    <p><strong>Priority Score:</strong> {priority_score:.0f}/100</p>
+                    <p><strong>Current Margin:</strong> {row['Gross Margin %']:.1%}</p>
+                    <p><strong>Revenue:</strong> ${row['Revenue']:,.0f}</p>
+                </div>
+                """, unsafe_allow_html=True)
+        
+        # Last 2 priorities in right column
+        with priority_col2:
+            for i, (_, row) in enumerate(top_5_priorities.tail(2).iterrows()):
+                priority_score = row['Improvement_Potential'] / margin_improvement['Improvement_Potential'].max() * 100
+                rank_number = i + 4
+                st.markdown(f"""
+                <div style="background: #f8f9fa; padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #dc2626;">
+                    <h4>#{rank_number} {row['Country']} - {row['Category']}</h4>
                     <p><strong>Priority Score:</strong> {priority_score:.0f}/100</p>
                     <p><strong>Current Margin:</strong> {row['Gross Margin %']:.1%}</p>
                     <p><strong>Revenue:</strong> ${row['Revenue']:,.0f}</p>
