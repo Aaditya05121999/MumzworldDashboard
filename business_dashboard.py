@@ -2,8 +2,6 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -824,7 +822,7 @@ def main():
 
         # Calculation methodology
         st.markdown("### Calculation Methodology")
-        st.markdown(f"""
+        st.markdown("""
         <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
             <h4>Churn Driver Analysis (Excluding SLA):</h4>
             <p><strong>Note:</strong> SLA Compliance excluded from analysis as Q3 established no correlation with customer behavior</p>
@@ -978,10 +976,10 @@ def main():
         col1, col2 = st.columns(2)
 
         with col1:
-            st.markdown("#### 🏆 Customer Value Champions")
+            st.markdown("####  Customer Value Champions")
             top_performers = performance_analysis.head(3)
             for i, (_, row) in enumerate(top_performers.iterrows()):
-                rank_emoji = ["🥇", "🥈", "🥉"][i]
+                rank_emoji = ["", "", ""][i]
                 st.markdown(f"""
                 <div style="background: #f0fdf4; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid #10b981;">
                     <h5>{rank_emoji} {row['Category']}</h5>
@@ -992,12 +990,12 @@ def main():
                 """, unsafe_allow_html=True)
 
         with col2:
-            st.markdown("#### ⚠️ Acquisition-Heavy Categories")
+            st.markdown("####  Acquisition-Heavy Categories")
             high_acquisition = performance_analysis.tail(3)
             for _, row in high_acquisition.iterrows():
                 st.markdown(f"""
                 <div style="background: #fef3c7; padding: 0.75rem; margin: 0.5rem 0; border-radius: 6px; border-left: 3px solid #f59e0b;">
-                    <h5>📈 {row['Category']}</h5>
+                    <h5> {row['Category']}</h5>
                     <p><strong>Revenue/Customer:</strong> ${row['Revenue_Per_Customer']:.0f}</p>
                     <p><strong>New/Repeat Mix:</strong> {row['New_Customer_Ratio']:.0%}/{(1-row['New_Customer_Ratio']):.0%}</p>
                     <p><strong>Growth Focus:</strong> High acquisition, needs retention strategy</p>
@@ -1057,18 +1055,18 @@ def main():
 
         for _, row in action_plan_categories.iterrows():
             if row['New_Customer_Ratio'] > 0.6:
-                strategy = "🔄 RETENTION FOCUS"
-                action = f"Launch loyalty program and post-purchase engagement sequence"
+                strategy = "RETENTION FOCUS"
+                action = "Launch loyalty program and post-purchase engagement sequence"
                 color = "#fef3c7"
                 border_color = "#f59e0b"
             elif row['New_Customer_Ratio'] < 0.4:
-                strategy = "📈 ACQUISITION BOOST"
-                action = f"Increase marketing spend and referral programs"
+                strategy = "ACQUISITION BOOST"
+                action = "Increase marketing spend and referral programs"
                 color = "#e0f2fe"
                 border_color = "#0ea5e9"
             else:
-                strategy = "✅ MAINTAIN BALANCE"
-                action = f"Continue current strategy - optimal customer mix"
+                strategy = "MAINTAIN BALANCE"
+                action = "Continue current strategy - optimal customer mix"
                 color = "#f0fdf4"
                 border_color = "#10b981"
 
@@ -1129,7 +1127,7 @@ def main():
         with priority_col1:
             for i, (_, row) in enumerate(top_5_priorities.head(3).iterrows()):
                 priority_score = row['Improvement_Potential'] / margin_improvement['Improvement_Potential'].max() * 100
-                rank_emoji = ["🥇", "🥈", "🥉"][i]
+                rank_emoji = ["", "", ""][i]
                 st.markdown(f"""
                 <div style="background: #f8f9fa; padding: 1rem; margin: 0.5rem 0; border-radius: 8px; border-left: 4px solid #dc2626;">
                     <h4>{rank_emoji} {row['Country']} - {row['Category']}</h4>
@@ -1287,7 +1285,7 @@ def main():
         top_repurchase_categories = repurchase_margin_analysis.nlargest(3, 'Repurchase Rate')
 
         st.markdown("### Recommended Growth Strategy")
-        st.markdown(f"""
+        st.markdown("""
         <div class="insight-card">
             <h4>High-Repurchase Categories to Prioritize:</h4>
             <ul>
@@ -1425,7 +1423,7 @@ def main():
         """, unsafe_allow_html=True)
 
     # Strategic insights from the analysis
-    st.markdown(f"""
+    st.markdown("""
     <div class="insight-card">
         <h3>Key Strategic Findings</h3>
         <p>This comprehensive analysis of Mumzworld's business performance reveals significant opportunities for optimization across multiple dimensions:</p>
