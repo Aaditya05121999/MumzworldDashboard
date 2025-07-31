@@ -798,35 +798,6 @@ def main():
                     <p><strong> Annual Return:</strong> {(roi_ratio-1)*100:+.0f}%</p>
                 </div>
                 """, unsafe_allow_html=True)
-
-        # Quick scenario buttons
-        st.markdown("#### Quick Scenario Templates")
-
-        scenario_col1, scenario_col2, scenario_col3 = st.columns(3)
-
-        with scenario_col1:
-            if st.button(" Conservative Plan", help="15% shipping, 10% voucher reduction"):
-                shipping_reduction = 15
-                voucher_reduction = 10
-                marketing_optimization = 0
-                high_margin_boost = 5
-                st.rerun()
-
-        with scenario_col2:
-            if st.button(" Aggressive Plan", help="25% shipping, 20% voucher, 10% marketing cut, 15% high-margin boost"):
-                shipping_reduction = 25
-                voucher_reduction = 20
-                marketing_optimization = -10
-                high_margin_boost = 15
-                st.rerun()
-
-        with scenario_col3:
-            if st.button(" Growth Plan", help="15% shipping reduction, 15% marketing increase, 20% high-margin boost"):
-                shipping_reduction = 15
-                voucher_reduction = 5
-                marketing_optimization = 15
-                high_margin_boost = 20
-                st.rerun()
    
     # Question 7: Strong repurchase behavior at low cost
     st.markdown('<div class="question-header">Q7: Which category shows strong repurchase behavior at low cost?</div>', unsafe_allow_html=True)
