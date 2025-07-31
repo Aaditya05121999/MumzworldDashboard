@@ -636,11 +636,10 @@ def main():
         fig.update_layout(height=350, xaxis_tickangle=-45)
         st.plotly_chart(fig, use_container_width=True)
 
-        # Calculate per order savings```python
+        # Calculate per order savings
         per_order_savings = savings / ksa_data['Orders'].sum()
 
-        # Calculation```python
- methodology
+        # Calculation methodology
         st.markdown("### Calculation Methodology")
         st.markdown(f"""
         <div style="background: #f0f9ff; padding: 1rem; border-radius: 6px; border-left: 4px solid #0ea5e9; margin: 1rem 0;">
@@ -737,7 +736,7 @@ def main():
             baseline_shipping = ksa_data['Shipping Cost'].sum()
             baseline_voucher = df['Voucher Cost'].sum()
             baseline_marketing = df['Marketing Cost'].sum()
-            baseline_revenue = df['Revenue'].sum()
+            df['Revenue'].sum()
             baseline_gross_profit = df['Gross_Profit'].sum()
 
             # Calculate scenario impacts
@@ -760,8 +759,8 @@ def main():
             st.markdown(f"""
             <div style="background: #f0f9ff; padding: 1rem; border-radius: 8px; border-left: 4px solid #0ea5e9;">
                 <h4>Scenario Results</h4>
-                <p><strong>💰 Total Profit Impact:</strong> <span style="color: {'#059669' if total_profit_impact > 0 else '#dc2626'};">${total_profit_impact:+,.0f}</span></p>
-                <p><strong>📈 ROI Impact:</strong> <span style="color: {'#059669' if roi_percentage > 0 else '#dc2626'};">{roi_percentage:+.1f}%</span></p>
+                <p><strong> Total Profit Impact:</strong> <span style="color: {'#059669' if total_profit_impact > 0 else '#dc2626'};">${total_profit_impact:+,.0f}</span></p>
+                <p><strong> ROI Impact:</strong> <span style="color: {'#059669' if roi_percentage > 0 else '#dc2626'};">{roi_percentage:+.1f}%</span></p>
                 <hr>
                 <p><strong>Component Breakdown:</strong></p>
                 <ul>
@@ -780,7 +779,7 @@ def main():
             investment_amount = st.number_input(
                 "Investment Amount ($)",
                 min_value=0,
-                max_value=1000000,
+                max_value=10000000,
                 value=50000,
                 step=10000,
                 help="Enter the investment required for implementation"
@@ -793,10 +792,10 @@ def main():
                 st.markdown(f"""
                 <div style="background: #fef3c7; padding: 1rem; border-radius: 8px; border-left: 4px solid #f59e0b;">
                     <h4>Investment Analysis</h4>
-                    <p><strong>💸 Investment:</strong> ${investment_amount:,.0f}</p>
-                    <p><strong>⏱️ Payback Period:</strong> {payback_months:.1f} months</p>
-                    <p><strong>🎯 ROI Ratio:</strong> {roi_ratio:.1f}x</p>
-                    <p><strong>📊 Annual Return:</strong> {(roi_ratio-1)*100:+.0f}%</p>
+                    <p><strong> Investment:</strong> ${investment_amount:,.0f}</p>
+                    <p><strong> Payback Period:</strong> {payback_months:.1f} months</p>
+                    <p><strong> ROI Ratio:</strong> {roi_ratio:.1f}x</p>
+                    <p><strong> Annual Return:</strong> {(roi_ratio-1)*100:+.0f}%</p>
                 </div>
                 """, unsafe_allow_html=True)
 
@@ -806,7 +805,7 @@ def main():
         scenario_col1, scenario_col2, scenario_col3 = st.columns(3)
 
         with scenario_col1:
-            if st.button("💼 Conservative Plan", help="15% shipping, 10% voucher reduction"):
+            if st.button(" Conservative Plan", help="15% shipping, 10% voucher reduction"):
                 shipping_reduction = 15
                 voucher_reduction = 10
                 marketing_optimization = 0
@@ -814,7 +813,7 @@ def main():
                 st.rerun()
 
         with scenario_col2:
-            if st.button("🚀 Aggressive Plan", help="25% shipping, 20% voucher, 10% marketing cut, 15% high-margin boost"):
+            if st.button(" Aggressive Plan", help="25% shipping, 20% voucher, 10% marketing cut, 15% high-margin boost"):
                 shipping_reduction = 25
                 voucher_reduction = 20
                 marketing_optimization = -10
@@ -822,69 +821,13 @@ def main():
                 st.rerun()
 
         with scenario_col3:
-            if st.button("🎯 Growth Plan", help="15% shipping reduction, 15% marketing increase, 20% high-margin boost"):
+            if st.button(" Growth Plan", help="15% shipping reduction, 15% marketing increase, 20% high-margin boost"):
                 shipping_reduction = 15
                 voucher_reduction = 5
                 marketing_optimization = 15
                 high_margin_boost = 20
                 st.rerun()
-
-        # Sensitivity Analysis
-        st.markdown("#### Sensitivity Analysis")
-        st.markdown("**How sensitive is profit to different variables?**")
-
-        # Create sensitivity data
-        sensitivity_data = {
-            'Variable': ['Shipping Cost', 'Voucher Spend', 'Marketing Cost', 'High-Margin Revenue'],
-            '1% Change Impact': [
-                baseline_shipping * 0.01,
-                baseline_voucher * 0.01,
-                -baseline_marketing * 0.01,  # Negative because it's a cost
-                high_margin_revenue * 0.01 * high_margin_categories['Gross Margin %'].mean()
-            ]
-        }
-
-        sensitivity_df = pd.DataFrame(sensitivity_data)
-        sensitivity_df['Annual Impact ($1M)'] = sensitivity_df['1% Change Impact'] / 1000000
-
-        fig_sensitivity = px.bar(
-            sensitivity_df,
-            x='Variable',
-            y='1% Change Impact',
-            title="Profit Sensitivity to 1% Change in Key Variables",
-            color='1% Change Impact',
-            color_continuous_scale='RdYlGn'
-        )
-        fig_sensitivity.update_layout(height=300, xaxis_tickangle=-45)
-        st.plotly_chart(fig_sensitivity, use_container_width=True)
-
-        # Implementation Priority Matrix
-        st.markdown("#### Implementation Priority Matrix")
-
-        implementation_data = {
-            'Initiative': ['Shipping Optimization', 'Voucher Reduction', 'Marketing Reallocation', 'Category Mix Optimization'],
-            'Impact ($)': [shipping_savings, voucher_savings, abs(marketing_change), additional_gross_profit],
-            'Implementation Ease (1-10)': [7, 9, 6, 4],
-            'Time to Impact (Months)': [3, 1, 2, 6]
-        }
-
-        impl_df = pd.DataFrame(implementation_data)
-
-        fig_priority = px.scatter(
-            impl_df,
-            x='Implementation Ease (1-10)',
-            y='Impact ($)',
-            size='Impact ($)',
-            color='Time to Impact (Months)',
-            hover_name='Initiative',
-            title="Initiative Priority Matrix (Higher Right = Better)",
-            color_continuous_scale='RdYlGn_r'
-        )
-        fig_priority.update_layout(height=400)
-        st.plotly_chart(fig_priority, use_container_width=True)
-
-        st.markdown('</div>', unsafe_allow_html=True)
-
+   
     # Question 7: Strong repurchase behavior at low cost
     st.markdown('<div class="question-header">Q7: Which category shows strong repurchase behavior at low cost?</div>', unsafe_allow_html=True)
 
@@ -1059,14 +1002,14 @@ def main():
             </ol>
         </div>
         """, unsafe_allow_html=True)
-
+        
         st.markdown("### Strategic Recommendations")
         st.markdown(f"""
         <div class="insight-card">
             <h4>Immediate Actions for Mumzworld:</h4>
             <ol>
                 <li><strong>Launch {highest_churn_country} retention program</strong> - focus on improving delivery speed and success rates</li>
-                <li><strong>Optimize {strongest_driver.lower()}</strong> as primary churn reduction lever</li>
+                <li><strong>Optimize {str(strongest_driver).lower()}</strong> as primary churn reduction lever</li>
                 <li><strong>Implement predictive churn alerts</strong> based on delivery performance metrics</li>
             </ol>
         </div>
